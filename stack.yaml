@@ -1,0 +1,6 @@
+resolver: lts-9.10
+packages:
+- .
+install-ghc: true
+extra-deps:
+- hsndfile-storablevector-0.5.2

@@ -1,0 +1,15 @@
+name: beat-detection
+version: '0.1.0.0'
+category: Web
+license: BSD3
+dependencies:
+- base >=4.7 && <5
+- synthesizer-core
+- hsndfile
+- hsndfile-storablevector
+- storablevector
+- sox
+executables:
+  beat-detection:
+    main: Main.hs
+    source-dirs: src
