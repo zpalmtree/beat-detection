@@ -31,19 +31,20 @@ main = do
     let input | null args = "tamborine.ogg"
               | otherwise = head args
 
-    (info, Just test) <- Snd.readFile input
-    let vector = toLazy $ fromBuffer test :: Buf Double
-        (initialBuf, rest) = takeHistoryBuf vector
-        (initialSample, initialSong) = takeSample rest
+    result <- Snd.readFile input
+    case result of
+        Left err -> putStrLn $ "Error reading file: " ++ err
+        Right (info, Just test) -> do
+            let vector = toLazy $ fromBuffer test :: Buf Double
+                (initialBuf, rest) = takeHistoryBuf vector
+                (initialSample, initialSong) = takeSample rest
+                initialLocalEnergyBuf = mkInitialBuf initialBuf
+                beatArray = calcBeatLoop initialSong initialLocalEnergyBuf initialSample
+                delay = round $ 1e6 * duration info / genericLength beatArray
+            forkIO $ printBeats beatArray 1 delay
+            play rest info (fromIntegral delay)
+        Right (_, Nothing) -> putStrLn "No samples found in the file."
 
-        initialLocalEnergyBuf = mkInitialBuf initialBuf
-
-        beatArray = calcBeatLoop initialSong initialLocalEnergyBuf initialSample
-
-    let delay = round $ 1e6 * duration info / genericLength beatArray
-
-    forkIO $ printBeats beatArray 1 delay
-    play rest info (fromIntegral delay)
 
 toLazy :: (Storable a) => V.Vector a -> Buf a
 toLazy xs = LazyV.pack LazyV.defaultChunkSize $ V.unpack xs
